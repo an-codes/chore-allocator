@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roommate Chore Allocator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;500&family=Shadows+Into+Light&display=swap');
+
+     body {
+       /* use the handwritten/cartoon font everywhere for a consistent look */
+       font-family: 'Shadows Into Light', cursive;
+        /* soft paper gradient + subtle vignette for a hipster/cartoon feel */
+        background: radial-gradient(circle at 10% 10%, #fffaf5 0%, #f7efe0 25%, #f2e8db 60%), linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+         color: #2f2a26;
+         text-align: center;
+         padding: 40px;
+      }
+
+     h1 {
+       /* make headings match the handwritten vibe */
+       font-family: 'Shadows Into Light', cursive;
+       font-size: 48px;
+       letter-spacing: 0.6px;
+       margin-bottom: 42px;
+     }
+
+     .container {
+       display: flex;
+       justify-content: center;
+       align-items: flex-start;
+       gap: 60px;
+     }
+
+     .roommate-box {
+       background: linear-gradient(180deg,#fffaf3,#fff6ee);
+       padding: 25px;
+       width: 355px;
+       min-height: 500px;
+       border-radius: 20px;
+       box-shadow: 0 18px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+       border: 3px dashed rgba(224,220,207,0.9);
+       transition: transform 0.2s ease;
+     }
+
+     .roommate-box:hover {
+       transform: rotate(-0.5deg);
+     }
+
+     .roommate-box h2 {
+       font-family: 'Shadows Into Light', cursive;
+       font-size: 28px;
+       margin-bottom: 18px;
+     }
+
+     .chore-box {
+       background: linear-gradient(180deg,#fffdf8,#fff7ee);
+       padding: 30px;
+       width: 1200px;
+       border-radius: 22px;
+       box-shadow: 0 18px 48px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+       margin: 100px auto 60px auto;
+       border: 2px solid rgba(230,220,207,0.9);
+     }
+
+     .chore-box h2 {
+       font-family: 'Shadows Into Light', cursive;
+       font-size: 30px;
+       margin-bottom: 18px;
+     }
+
+     .chore-items {
+       display: grid;
+       grid-template-rows: 1fr 1fr;
+       grid-auto-flow: column;
+       gap: 25px;
+     }
+
+     .chore-item {
+       background: linear-gradient(180deg,#f7efe0,#f2e6d0);
+       border-radius: 16px;
+       padding: 8px 12px;
+       transition: transform 0.25s ease, box-shadow 0.2s ease;
+       box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+       border: 3px solid rgba(230,220,207,0.9);
+     }
+
+     /* playful tilt for tiles; alternate direction for variety */
+     .chore-item:nth-child(odd) { transform: rotate(-3deg); }
+     .chore-item:nth-child(even) { transform: rotate(2deg); }
+     .chore-item:hover { transform: rotate(0deg) scale(1.06); box-shadow: 0 18px 36px rgba(0,0,0,0.12); }
+
+     .chore-item img {
+       width: 140px;
+       height: 140px;
+       object-fit: contain;
+       display: block;
+       margin: 6px auto 2px auto;
+       filter: drop-shadow(0 6px 10px rgba(0,0,0,0.08));
+     }
+
+     /* cartoony label under each image using the data-name attribute */
+     .chore-item::after {
+       content: attr(data-name);
+       display: block;
+       font-family: 'Shadows Into Light', cursive;
+       font-size: 20px;
+       color: #4a3f36;
+       margin-top: 6px;
+       letter-spacing: 0.6px;
+     }
+
+     /* little tape sticker in the corner for a hip look */
+     .chore-item::before {
+       content: '';
+       position: absolute;
+       width: 48px;
+       height: 14px;
+       background: linear-gradient(90deg,#f6e9d8,#f3dfc6);
+       transform: rotate(-10deg);
+       top: 8px;
+       left: 12px;
+       border-radius: 3px;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+     }
+
+     /* make chore-items relatively positioned so ::before can be placed */
+     .chore-item { position: relative; }
+
+     .allocate-btn {
+       padding: 14px 28px;
+       font-family: 'Shadows Into Light', cursive;
+       font-size: 20px;
+       background: #b07d62;
+       color: white;
+       border: none;
+       border-radius: 26px;
+       cursor: pointer;
+       box-shadow: 0 8px 20px rgba(176,125,98,0.4);
+       transition: transform 0.18s ease, box-shadow 0.18s ease;
+       letter-spacing: 0.6px;
+     }
+
+     .allocate-btn:hover {
+       transform: translateY(-3px) rotate(-1deg);
+       box-shadow: 0 12px 28px rgba(176,125,98,0.5);
+     }
+
+     .button-column {
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       gap: 25px;
+       margin-top: 120px;
+     }
+
+     .assigned-chores-grid {
+       display: grid;
+       grid-template-columns: 1fr 1fr;
+       gap: 18px;
+     }
+
+     /* Gentle drop-in animation for assigned chores */
+     @keyframes dropIn {
+       0% {
+         transform: translateY(-40px) scale(1.03);
+         opacity: 0;
+         filter: blur(2px);
+       }
+       60% {
+         opacity: 1;
+         filter: blur(0);
+       }
+       100% {
+         transform: translateY(0) scale(1);
+         opacity: 1;
+         filter: none;
+       }
+     }
+
+     .drop-in {
+       animation-name: dropIn;
+       animation-duration: 1200ms;
+       animation-timing-function: cubic-bezier(.2,.9,.3,1);
+       animation-fill-mode: both;
+     }
+
+     /* Fast pop animation for reset — quick and snappy */
+     @keyframes resetPop {
+       0% { transform: translateY(-12px) scale(0.95); opacity: 0; }
+       60% { transform: translateY(6px) scale(1.03); opacity: 1; }
+       100% { transform: translateY(0) scale(1); opacity: 1; }
+     }
+     .reset-pop {
+       animation-name: resetPop;
+       animation-duration: 260ms;
+       animation-timing-function: cubic-bezier(.3,.9,.4,1);
+       animation-fill-mode: both;
+     }
+    </style>
+</head>
+<body>
+
+<h1>🧹 Roommate Chore Allocator</h1>
+
+<div class="container">
+    <div class="roommate-box" id="roommate1">
+        <h2>Anna</h2>
+        <div class="assigned-chores-grid" id="annaChores"></div>
+    </div>
+    <div class="button-column">
+        <button class="allocate-btn" onclick="allocateChores()">🎯 Allocate</button>
+        <button class="allocate-btn" onclick="resetChores()">🔄 Reset</button>
+    </div>
+    <div class="roommate-box" id="roommate2">
+        <h2>Roommate</h2>
+        <div class="assigned-chores-grid" id="roommateChores"></div>
+    </div>
+</div>
+
+<div class="chore-box" id="choreBox">
+    <h2>Available Chores</h2>
+    <div class="chore-items">
+        <div class="chore-item" data-name="Bath">
+            <img src="bath.png" alt="bath chore icon">
+        </div>
+        <div class="chore-item" data-name="Carpet">
+            <img src="carpet.png" alt="carpet chore icon">
+        </div>
+        <div class="chore-item" data-name="Extractor">
+            <img src="extractor.png" alt="extractor chore icon">
+        </div>
+        <div class="chore-item" data-name="Hob">
+            <img src="hob.png" alt="hob chore icon">
+        </div>
+        <div class="chore-item" data-name="Mopping">
+            <img src="mopping.png" alt="mopping chore icon">
+        </div>
+        <div class="chore-item" data-name="Sink">
+            <img src="sink.png" alt="sink chore icon">
+        </div>
+        <div class="chore-item" data-name="Toilet">
+            <img src="toilet.png" alt="toilet chore icon">
+        </div>
+        <div class="chore-item" data-name="Vacuum">
+            <img src="vacuum.png" alt="vacuum chore icon">
+        </div>
+        <div class="chore-item" data-name="Window">
+            <img src="window.png" alt="window chore icon">
+        </div>
+        <div class="chore-item" data-name="Laundry">
+            <img src="laundry.png" alt="laundry chore icon">
+        </div>
+        <div class="chore-item" data-name="Iron">
+            <img src="iron.png" alt="iron chore icon">
+        </div>
+        <div class="chore-item" data-name="Plant">
+            <img src="plant.png" alt="plant chore icon">
+        </div>
+    </div>
+</div>
+
+<script>
+    function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i +1));
+    [array[i], array[j]] = [array[j], array[i]]
+    }
+    }
+
+      function allocateChores() {
+      // Immediate allocation without animation
+      const chores = Array.from(document.querySelectorAll('.chore-item'));
+      const visibleChores = chores.filter(chore => chore.style.display !== 'none');
+      const roommate1 = document.getElementById('roommate1');
+      const roommate2 = document.getElementById('roommate2');
+      const choreBox = document.getElementById('choreBox');
+
+      // Reset roommate boxes (keep titles and grid containers)
+      roommate1.innerHTML = '<h2>Anna</h2><div class="assigned-chores-grid" id="annaChores"></div>';
+      roommate2.innerHTML = '<h2>Roommate</h2><div class="assigned-chores-grid" id="roommateChores"></div>';
+      const annaChoresGrid = document.getElementById('annaChores');
+      const roommateChoresGrid = document.getElementById('roommateChores');
+
+      // Shuffle and assign immediately
+      shuffle(visibleChores);
+      const half = Math.floor(visibleChores.length / 2);
+      visibleChores.forEach((chore, index) => {
+        const clone = chore.cloneNode(true);
+        clone.classList.add('assigned-chore');
+        // add gentle drop-in animation with a small stagger
+        clone.classList.add('drop-in');
+        // slower stagger so items appear more leisurely
+        clone.style.animationDelay = `${index * 140}ms`;
+        if (index < half) {
+          annaChoresGrid.appendChild(clone);
+        } else {
+          roommateChoresGrid.appendChild(clone);
+        }
+        chore.style.display = 'none';
+      });
+
+      // Show message in chore box
+      choreBox.innerHTML = '<h2>All done! Happy cleaning 🧽✨</h2>';
+    }
+
+    function resetChores() {
+      // Reset roommate boxes
+      document.getElementById("roommate1").innerHTML = '<h2>Anna</h2><div class="assigned-chores-grid" id="annaChores"></div>';
+      document.getElementById("roommate2").innerHTML = '<h2>Roommate</h2><div class="assigned-chores-grid" id="roommateChores"></div>';
+
+      // Restore the original chores grid
+      document.getElementById("choreBox").innerHTML = `
+          <h2>Available Chores</h2>
+    <div class="chore-items">
+        <div class="chore-item" data-name="Bath">
+            <img src="bath.png" alt="bath chore icon">
+        </div>
+        <div class="chore-item" data-name="Carpet">
+            <img src="carpet.png" alt="carpet chore icon">
+        </div>
+        <div class="chore-item" data-name="Extractor">
+            <img src="extractor.png" alt="extractor chore icon">
+        </div>
+        <div class="chore-item" data-name="Hob">
+            <img src="hob.png" alt="hob chore icon">
+        </div>
+        <div class="chore-item" data-name="Mopping">
+            <img src="mopping.png" alt="mopping chore icon">
+        </div>
+        <div class="chore-item" data-name="Sink">
+            <img src="sink.png" alt="sink chore icon">
+        </div>
+        <div class="chore-item" data-name="Toilet">
+            <img src="toilet.png" alt="toilet chore icon">
+        </div>
+        <div class="chore-item" data-name="Vacuum">
+            <img src="vacuum.png" alt="vacuum chore icon">
+        </div>
+        <div class="chore-item" data-name="Window">
+            <img src="window.png" alt="window chore icon">
+        </div>
+        <div class="chore-item" data-name="Laundry">
+            <img src="laundry.png" alt="laundry chore icon">
+        </div>
+        <div class="chore-item" data-name="Iron">
+            <img src="iron.png" alt="iron chore icon">
+        </div>
+        <div class="chore-item" data-name="Plant">
+            <img src="plant.png" alt="plant chore icon">
+        </div>
+    </div>`;
+
+      // Quick reset animation: pop each chore in with a short stagger
+      const newChores = Array.from(document.querySelectorAll('#choreBox .chore-item'));
+      newChores.forEach((item, i) => {
+        item.classList.add('reset-pop');
+        item.style.animationDelay = `${i * 40}ms`;
+        item.addEventListener('animationend', () => {
+          item.classList.remove('reset-pop');
+          item.style.animationDelay = '';
+        }, { once: true });
+      });
+    }
+</script>
+</body>
+</html>
