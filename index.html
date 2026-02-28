@@ -204,8 +204,8 @@
 
 <div class="container">
     <div class="roommate-box" id="roommate1">
-        <h2>Anna</h2>
-        <div class="assigned-chores-grid" id="annaChores"></div>
+        <h2>You</h2>
+        <div class="assigned-chores-grid" id="youChores"></div>
     </div>
     <div class="button-column">
         <button class="allocate-btn" onclick="allocateChores()">🎯 Allocate</button>
@@ -276,9 +276,9 @@
       const choreBox = document.getElementById('choreBox');
 
       // Reset roommate boxes (keep titles and grid containers)
-      roommate1.innerHTML = '<h2>Anna</h2><div class="assigned-chores-grid" id="annaChores"></div>';
+      roommate1.innerHTML = '<h2>You</h2><div class="assigned-chores-grid" id="youChores"></div>';
       roommate2.innerHTML = '<h2>Roommate</h2><div class="assigned-chores-grid" id="roommateChores"></div>';
-      const annaChoresGrid = document.getElementById('annaChores');
+      const youChoresGrid = document.getElementById('youChores');
       const roommateChoresGrid = document.getElementById('roommateChores');
 
       // Shuffle and assign immediately
@@ -292,7 +292,7 @@
         // slower stagger so items appear more leisurely
         clone.style.animationDelay = `${index * 140}ms`;
         if (index < half) {
-          annaChoresGrid.appendChild(clone);
+          youChoresGrid.appendChild(clone);
         } else {
           roommateChoresGrid.appendChild(clone);
         }
@@ -305,7 +305,7 @@
 
     function resetChores() {
       // Reset roommate boxes
-      document.getElementById("roommate1").innerHTML = '<h2>Anna</h2><div class="assigned-chores-grid" id="annaChores"></div>';
+      document.getElementById("roommate1").innerHTML = '<h2>You</h2><div class="assigned-chores-grid" id="youChores"></div>';
       document.getElementById("roommate2").innerHTML = '<h2>Roommate</h2><div class="assigned-chores-grid" id="roommateChores"></div>';
 
       // Restore the original chores grid
